@@ -32,3 +32,6 @@ perkey rgb docs (rgb matrix https://docs.qmk.fm/features/rgb_matrix)
 just put in bootloader mode with the reset button on the back of the keyboard
 then run `qmk flash -kb <my_keyboard> -km <my_keymap>`
 make sure to program each half
+
+
+flashing split keyboards? may not be necessary in this way  https://docs.qmk.fm/features/split_keyboard

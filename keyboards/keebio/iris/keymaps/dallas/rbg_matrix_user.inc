@@ -1,3 +1,5 @@
+// !!! DO NOT ADD #pragma once !!! //
+
 // RGB_MATRIX_CUSTOM_KB = yes is required in rules.mk for this code to work
 // inspiration and examples under quantum/rgb_matrix/animations/, docs here: https://docs.qmk.fm/features/rgb_matrix
 // to use these effects programmatically, call it like this
