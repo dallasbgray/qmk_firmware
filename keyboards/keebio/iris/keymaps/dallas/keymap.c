@@ -31,21 +31,21 @@ typedef struct {
     td_state_t state;
 } td_tap_t;
 
-enum tap_dance_keycodes {
+typedef enum  {
     DANCE1
-};
+} tap_dance_keycodes;
 
 td_state_t cur_dance(tap_dance_state_t *state);
 void dance1_finished(tap_dance_state_t *state, void *user_data);
 void dance1_reset(tap_dance_state_t *state, void *user_data);
 
 // Layouts
-enum layer_names {
+typedef enum  {
     _QUERTY,
     _GAME,
     _SYMBOL,
     _ADJUST
-};
+} layer_names;
 
 // shorter keycodes 
 #define LEFTALT LALT_T(KC_LBRC)
@@ -63,7 +63,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
          KC_LCTL,  KC_Z  ,  KC_X  ,  KC_C  ,  KC_V  ,  KC_B  , LEFTALT,         RIGHTALT,  KC_N  ,  KC_M  , KC_COMM, KC_DOT , KC_SLSH, KC_QUOT,
     // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘        └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
-                                         KC_LGUI,  MO(1) , KC_SPC ,                  KC_SPC,    TD_1  , KC_ENT
+                                         KC_LGUI,MO(_SYMBOL), KC_SPC ,                  KC_SPC,    TD_1  , KC_ENT
                                     // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
     ),
     [_SYMBOL] = LAYOUT(
@@ -125,15 +125,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 
 /* RGB SECTION */
+uint8_t leds_numpad[] = {44, 45, 46, 51, 52, 53, 56, 57,59, 63};
+uint8_t leds_function[] = {0, 2, 3, 5, 6, 8, 34, 36, 37, 39, 40, 42};
+uint8_t leds_wasd[] = {12, 16, 17, 18};
+// uint8_t leds_settings[] = {};
+// uint8_t leds_warning[] = {0, 1, 2, 3, 4, 34, 35, 36, 37, 38};
+uint8_t leds_backlight[] = {1, 4, 7, 24, 27, 31, 35, 38, 41, 58, 61, 65};
 
-// this is where you want to setup rgb underglow
-// keyboard_post_init_user()  // useful after init
-
-// 6 RGB underglow LEDs per half (12 total)
-// Per-key RGB LEDs
-
+   // set initial rgb here or in default_layer_state_set_user(layer_state_t state)???
 void keyboard_post_init_user(void) {
-   (void) rgb_matrix_enable();
+   (void) rgb_matrix_enable_noeeprom();
 }
 
 // uint8_t leds_numpad[] = {};
@@ -218,7 +219,7 @@ td_state_t cur_dance(tap_dance_state_t *state) {
     else return TD_UNKNOWN;
 }
 
-// // Create an instance of 'td_tap_t' for the 'x' tap dance.
+// Create an instance of 'td_tap_t' for the 'dance1' tap dance.
 static td_tap_t dance1_tap_state = {
     .is_press_action = true,
     .state = TD_NONE
@@ -227,34 +228,27 @@ static td_tap_t dance1_tap_state = {
 void dance1_finished(tap_dance_state_t *state, void *user_data) {
     dance1_tap_state.state = cur_dance(state);
     switch (dance1_tap_state.state) {
-        case TD_SINGLE_TAP: 
-            // register_code(KC_X);
+        case TD_SINGLE_TAP:
+            // one shot mod to symbol layer
             set_oneshot_layer(_SYMBOL, ONESHOT_START);
             clear_oneshot_layer_state(ONESHOT_PRESSED);
-            break; // one shot mod to symbol layer
-        // case TD_SINGLE_HOLD: register_code(KC_X); break; // nothing
-        case TD_DOUBLE_TAP:
-            // register_code(KC_W);
-                switch(get_highest_layer(layer_state|default_layer_state)) {
-                    case _QUERTY:
-                        // rgb_matrix_mode(RGB_MATRIX_CUSTOM_my_cool_effect);
-                        // set my favorite custom effect here
-                        layer_move(_GAME);
-                        // rgblight_setrgb (0x00,  0x00, 0xFF);
-                        break;
-                    case _GAME:
-                        // highlight wasd, and can use effect on any others
-                        layer_move(_QUERTY);
-                        break;
-                    default:
-                        layer_move(_QUERTY);
-                        break;
-                }
             break;
-        case TD_TRIPLE_HOLD:
+        case TD_DOUBLE_TAP:
+            switch(get_highest_layer(layer_state|default_layer_state)) {
+                case _QUERTY:
+                    layer_move(_GAME);
+                    break;
+                case _GAME:
+                    layer_move(_QUERTY);
+                    break;
+                default:
+                    layer_move(_QUERTY);
+                    break;
+            }
+            break;
+        case TD_TRIPLE_TAP:
             layer_move(_ADJUST);
             break;
-        // case TD_DOUBLE_HOLD: register_code(KC_Y); break; // nothing
         // Last case is for fast typing. Assuming your key is `f`:
         // For example, when typing the word `buffer`, and you want to make sure that you send `ff` and not `Esc`.
         // In order to type `ff` when typing fast, the next character will have to be hit within the `TAPPING_TERM`, which by default is 200ms.
@@ -265,19 +259,15 @@ void dance1_finished(tap_dance_state_t *state, void *user_data) {
 
 void dance1_reset(tap_dance_state_t *state, void *user_data) {
     switch (dance1_tap_state.state) {
-        case TD_SINGLE_TAP:  break; // nothing
-        // case TD_SINGLE_HOLD: unregister_code(KC_X); break;
-        case TD_DOUBLE_TAP: unregister_code(KC_W); break; // nothing
-        // case TD_DOUBLE_HOLD: unregister_code(KC_Y); break;
-        // case TD_DOUBLE_SINGLE_TAP: unregister_code(KC_Z); break;
+        case TD_SINGLE_TAP: break; // do nothing
+        case TD_DOUBLE_TAP: break; // do nothing
+        case TD_TRIPLE_TAP: break; // do nothing
         default: break;
     }
     dance1_tap_state.state = TD_NONE;
 }
+
 // Tap Dance definitions, to access use the TD(index) macro in layouts
 tap_dance_action_t tap_dance_actions[] = {
-    // Tap once for Escape, twice for Caps Lock
-    // [TD_ESC_CAPS] = ACTION_TAP_DANCE_DOUBLE(KC_ESC, KC_CAPS),
-    // [TD_LAYER] = ACTION_TAP_DANCE_LAYER_MOVE(KC_ENTER, 2)
     [DANCE1] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, dance1_finished, dance1_reset)
 };
