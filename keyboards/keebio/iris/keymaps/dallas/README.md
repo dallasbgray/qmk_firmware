@@ -28,3 +28,5 @@ keebio iris rev8 rgb led index locations (based on keebio/rev8/keyboard.json)
 
 Personal changelog of files not in keymaps/dallas (e.g. iris/info.json or iris/rev8/keyboard.json)
 - `keyboard.json` set all rgb effects to `false`
+- `keyboard.json` "nkro" and "force_nkro" set to `true`,
+- `keyboard.json` enable a couple rgb effects,

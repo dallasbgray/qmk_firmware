@@ -32,12 +32,18 @@ typedef struct {
 } td_tap_t;
 
 typedef enum  {
-    DANCE1
+    DANCE1,
+    DANCE2,
+    DANCE3
 } tap_dance_keycodes;
 
 td_state_t cur_dance(tap_dance_state_t *state);
 void dance1_finished(tap_dance_state_t *state, void *user_data);
 void dance1_reset(tap_dance_state_t *state, void *user_data);
+void dance2_finished(tap_dance_state_t *state, void *user_data);
+void dance2_reset(tap_dance_state_t *state, void *user_data);
+void dance3_finished(tap_dance_state_t *state, void *user_data);
+void dance3_reset(tap_dance_state_t *state, void *user_data);
 
 // Layouts
 typedef enum  {
@@ -48,141 +54,124 @@ typedef enum  {
 } layer_names;
 
 // shorter keycodes 
-#define LEFTALT LALT_T(KC_LBRC)
-#define RIGHTALT RALT_T(KC_RBRC)
-#define TD_1 TD(DANCE1)
+#define LEFTALT     LALT_T(KC_LBRC)
+#define RIGHTALT    RALT_T(KC_RBRC)
+#define TD_1        TD(DANCE1)
+#define TD_2        TD(DANCE2)
+#define TD_3        TD(DANCE3)
+#define MO_SYM      MO(_SYMBOL)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QUERTY] = LAYOUT(
-    // ┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
-        QK_GESC ,  KC_1  ,  KC_2  ,  KC_3  ,  KC_4  ,  KC_5  ,                             KC_6  ,  KC_7  ,  KC_8  ,  KC_9  ,  KC_0  , KC_BSPC,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-         KC_TAB ,  KC_Q  ,  KC_W  ,  KC_E  ,  KC_R  ,  KC_T  ,                             KC_Y  ,  KC_U  ,  KC_I  ,  KC_O  ,  KC_P  , KC_ENT ,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-         SC_LSPO,  KC_A  ,  KC_S  ,  KC_D  ,  KC_F  ,  KC_G  ,                             KC_H  ,  KC_J  ,  KC_K  ,  KC_L  , KC_SCLN, SC_RSPC,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-         KC_LCTL,  KC_Z  ,  KC_X  ,  KC_C  ,  KC_V  ,  KC_B  , LEFTALT,         RIGHTALT,  KC_N  ,  KC_M  , KC_COMM, KC_DOT , KC_SLSH, KC_QUOT,
-    // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘        └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
-                                         KC_LGUI,MO(_SYMBOL), KC_SPC ,                  KC_SPC,    TD_1  , KC_ENT
-                                    // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
-    ),
-    [_SYMBOL] = LAYOUT(
-    // ┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
-        KC_F12, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_F11,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-        KC_TRNS, KC_TRNS, KC_UP, KC_TRNS, KC_LPRN, KC_RPRN, KC_AMPR, KC_P1, KC_P2, KC_P3, KC_EQL, KC_TRNS,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-       KC_TRNS, KC_LEFT, KC_DOWN, KC_RGHT, KC_LCBR, KC_RCBR, KC_PIPE, KC_P4, KC_P5, KC_P6, KC_MINS, KC_TRNS,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-       KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_LBRC, KC_RBRC, KC_TRNS, KC_TRNS, KC_EXLM, KC_P7, KC_P8, KC_P9, KC_BSLS, KC_TRNS,
-    // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘        └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
-                                        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_P0
-                                    // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
+    // ┌────────┬────────┬────────┬────────┬────────┬────────┐                       ┌────────┬────────┬────────┬────────┬────────┬────────┐
+         QK_GESC,  KC_1  ,  KC_2  ,  KC_3  ,  KC_4  ,  KC_5  ,                          KC_6  ,  KC_7  ,  KC_8  ,  KC_9  ,  KC_0  , KC_BSPC,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_TAB ,  KC_Q  ,  KC_W  ,  KC_E  ,  KC_R  ,  KC_T  ,                          KC_Y  ,  KC_U  ,  KC_I  ,  KC_O  ,  KC_P  , KC_ENT ,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
+         SC_LSPO,  KC_A  ,  KC_S  ,  KC_D  ,  KC_F  ,  KC_G  ,                          KC_H  ,  KC_J  ,  KC_K  ,  KC_L  , KC_SCLN, SC_RSPC,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐     ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_LCTL,  KC_Z  ,  KC_X  ,  KC_C  ,  KC_V  ,  KC_B  , LEFTALT,      RIGHTALT,  KC_N  ,  KC_M  , KC_COMM, KC_DOT , KC_SLSH, KC_QUOT,
+    // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘     └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
+                                         KC_LGUI, MO_SYM , KC_SPC ,               KC_SPC,   TD_1  , KC_ENT
+                                    // └────────┴────────┴────────┘              └────────┴────────┴────────┘
     ),
     [_GAME] = LAYOUT(
-    // ┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
-       KC_ESC, KC_1, KC_2, KC_3, KC_4, KC_5, KC_6, KC_7, KC_8, KC_9, KC_0, KC_BSPC,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-       KC_TAB, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_ENT,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-        KC_LSFT,KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, RGB_VAI, RGB_VAD, 
-    // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-        KC_LCTL,KC_Z, KC_X, KC_C, KC_V, KC_B, KC_LALT, KC_NO, KC_N, KC_M, RGB_TOG, BL_TOGG, BL_UP, BL_DOWN,
-    // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘        └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
-                                       KC_LGUI, KC_SPC, KC_F1, KC_CAPS, TD_1, KC_NO
-                                    // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
+    // ┌────────┬────────┬────────┬────────┬────────┬────────┐                       ┌────────┬────────┬────────┬────────┬────────┬────────┐
+         KC_ESC , KC_1   , KC_2   , KC_3   , KC_4   , KC_5   ,                         KC_6   , KC_7   , KC_8   , KC_9   , KC_0   , KC_BSPC,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_TAB , KC_Q   , KC_W   , KC_E   , KC_R   , KC_T   ,                         KC_Y   , KC_U   , KC_I   , KC_O   , KC_P   , KC_ENT ,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_LSFT, KC_A   , KC_S   , KC_D   , KC_F   , KC_G   ,                         KC_H   , KC_J   , KC_K   , KC_L   , RGB_VAI, RGB_VAD, 
+    // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐     ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_LCTL, KC_Z   , KC_X   , KC_C   , KC_V   , KC_B   , KC_LALT,       KC_NO  , KC_N   , KC_M   , RGB_TOG, BL_TOGG, BL_UP  , BL_DOWN,
+    // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘     └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
+                                         KC_LGUI, KC_SPC , KC_F1  ,                KC_CAPS, TD_1   , KC_NO
+                                    // └────────┴────────┴────────┘              └────────┴────────┴────────┘
+    ),
+    [_SYMBOL] = LAYOUT(
+    // ┌────────┬────────┬────────┬────────┬────────┬────────┐                       ┌────────┬────────┬────────┬────────┬────────┬────────┐
+         KC_F12 , KC_F1  , KC_F2  , KC_F3  , KC_F4  , KC_F5  ,                         KC_F6  , KC_F7  , KC_F8  , KC_F9  , KC_F1  , KC_F11 ,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_TRNS, KC_TRNS, KC_UP  , KC_TRNS, KC_LPRN, KC_RPRN,                         KC_AMPR, KC_P1  , KC_P2  , KC_P3  , KC_EQL , KC_TRNS,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_TRNS, KC_LEFT, KC_DOWN, KC_RGHT, KC_LCBR, KC_RCBR,                         KC_PIPE, KC_P4  , KC_P5  , KC_P6  , KC_MINS, KC_TRNS,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐     ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_LBRC, KC_RBRC, KC_TRNS,       KC_TRNS, KC_EXLM, KC_P7  , KC_P8  , KC_P9  , KC_BSLS, KC_TRNS,
+    // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘     └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
+                                         KC_TRNS, KC_TRNS, KC_TRNS,                KC_TRNS, KC_TRNS, KC_P0
+                                    // └────────┴────────┴────────┘              └────────┴────────┴────────┘
     ),
     [_ADJUST] = LAYOUT(
-    // ┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
-         QK_BOOT, EE_CLR , KC_PWR , KC_SLEP, KC_WAKE, KC_NO  ,                            KC_NO  , KC_WAKE, KC_SLEP, KC_PWR , EE_CLR , QK_BOOT,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-         KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,                            KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-         KC_NO  , KC_NO  , NK_TOGG, KC_NO  , KC_NO  , RGB_TOG,                            RGB_TOG, KC_NO  , NK_TOGG, KC_NO  , KC_NO  , KC_NO  ,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-         KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,          KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,
-    // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘        └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
-                                         KC_NO  ,  TD_1  , KC_NO  ,                    KC_NO ,  TD_1  , KC_NO
-                                    // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
+    // ┌────────┬────────┬────────┬────────┬────────┬────────┐                       ┌────────┬────────┬────────┬────────┬────────┬────────┐
+         KC_NO  , KC_NO  , KC_NO  , TD_2   , TD_3   , NK_TOGG,                         NK_TOGG, TD_3  ,  TD_2   , KC_NO  , KC_NO  , KC_NO  ,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,                         KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_NO  , RGB_SPD, RGB_SPI, RGB_VAD, RGB_VAI, RGB_TOG,                         RGB_TOG, RGB_VAI, RGB_VAD, RGB_SPI, RGB_SPD, KC_NO  ,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐     ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+         KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,       KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,
+    // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘     └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
+                                         KC_NO  , TD_1   , KC_NO  ,                KC_NO  ,  TD_1  , KC_NO
+                                    // └────────┴────────┴────────┘              └────────┴────────┴────────┘
     )
 
     /*
     [_EMPTY] = LAYOUT(
-    // ┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
-                ,        ,        ,        ,        ,        ,                                   ,        ,        ,        ,        ,        ,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-                ,        ,        ,        ,        ,        ,                                   ,        ,        ,        ,        ,        ,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-                ,        ,        ,        ,        ,        ,                                   ,        ,        ,        ,        ,        ,
-    // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-                ,        ,        ,        ,        ,        ,        ,                 ,        ,        ,        ,        ,        ,        ,
-    // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘        └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
-                                                ,        ,        ,                          ,        ,
-                                    // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
+    // ┌────────┬────────┬────────┬────────┬────────┬────────┐                       ┌────────┬────────┬────────┬────────┬────────┬────────┐
+                ,        ,        ,        ,        ,        ,                                ,        ,        ,        ,        ,        ,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
+                ,        ,        ,        ,        ,        ,                                ,        ,        ,        ,        ,        ,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
+                ,        ,        ,        ,        ,        ,                                ,        ,        ,        ,        ,        ,
+    // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐     ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+                ,        ,        ,        ,        ,        ,        ,              ,        ,        ,        ,        ,        ,        ,
+    // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘     └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
+                                                ,        ,        ,                       ,        ,
+                                    // └────────┴────────┴────────┘              └────────┴────────┴────────┘
     ),
     */
 };
 
 
 /* RGB SECTION */
-uint8_t leds_numpad[] = {44, 45, 46, 51, 52, 53, 56, 57,59, 63};
-uint8_t leds_function[] = {0, 2, 3, 5, 6, 8, 34, 36, 37, 39, 40, 42};
-uint8_t leds_wasd[] = {12, 16, 17, 18};
-// uint8_t leds_settings[] = {};
-// uint8_t leds_warning[] = {0, 1, 2, 3, 4, 34, 35, 36, 37, 38};
-uint8_t leds_backlight[] = {1, 4, 7, 24, 27, 31, 35, 38, 41, 58, 61, 65};
 
-   // set initial rgb here or in default_layer_state_set_user(layer_state_t state)???
-void keyboard_post_init_user(void) {
-   (void) rgb_matrix_enable_noeeprom();
+void set_rgb_defaults(void) {
+    (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_JELLYBEAN_RAINDROPS);
 }
 
-// uint8_t leds_numpad[] = {};
-// uint8_t leds_function[] = {};
-// uint8_t leds_wasd[] = {};
-// uint8_t leds_settings[] = {};
-// uint8_t leds_warning[] = {};
-
-// layer indicator on all keys
-bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-    // for (uint8_t i = led_min; i < led_max; i++) {
-        switch(get_highest_layer(layer_state|default_layer_state)) {
-            case _QUERTY:
-                // rgb_matrix_mode(RGB_MATRIX_CUSTOM_my_cool_effect);
-                // set my favorite custom effect here
-                (void)rgb_matrix_set_color_all(RGB_PURPLE);
-                // rgblight_setrgb (0x00,  0x00, 0xFF);
-                break;
-            case _SYMBOL:
-                // highlight numpad, function row, and arrow keys
-                (void)rgb_matrix_set_color_all(RGB_BLUE);
-                break;
-            case _GAME:
-                // highlight wasd, and can use effect on any others
-                (void)rgb_matrix_set_color_all(RGB_YELLOW);
-                break;
-            case _ADJUST:
-                // no effect on main rgb, pulsing effect on backlight.
-                // highlight reset key, any other important keys
-                (void)rgb_matrix_set_color_all(RGB_GREEN);
-                break;
-            default:
-                break;
-        }
-    // }
-    return false;
+// set initial rgb here
+void keyboard_post_init_user(void) {
+    (void)rgb_matrix_enable_noeeprom();
+    (void)set_rgb_defaults();
 }
 
 // when using WS2812 hsv is important because it allows the brightness to be limited
-
-// uint32_t layer_state_set_user(uint32_t state) {
-//     uint8_t layer = biton32(state);
-//     switch(layer){
-//         case _QUERTY: // 0-th layer
-//         break;
-//         case
-//     }
-// }
+layer_state_t layer_state_set_user(layer_state_t state) {
+    // layer indicator on all keys
+    switch(get_highest_layer(state)) {
+        case _SYMBOL:
+            // highlight numpad, function row, and arrow keys
+            (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
+            (void)rgb_matrix_sethsv_noeeprom(HSV_BLUE);
+            break;
+        case _GAME:
+            // highlight wasd, and can use effect on any others
+            (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_NONE);
+            (void)rgb_matrix_sethsv_noeeprom(HSV_YELLOW);
+            break;
+        case _ADJUST:
+            // no effect on main rgb, pulsing effect on backlight.
+            // highlight reset key, any other important keys
+            (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_NONE);
+            (void)rgb_matrix_sethsv_noeeprom(HSV_GREEN);
+            break;
+        case _QUERTY: 
+        default:
+            (void)set_rgb_defaults();
+            break;
+    }
+    return state;
+}
 
 
 /* TAP DANCE SECTION */
@@ -190,46 +179,38 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 // look here for inspiration: https://github.com/walkerstop/qmk_firmware/blob/fanoe/keyboards/wheatfield/blocked65/keymaps/walker/keymap.c
 td_state_t cur_dance(tap_dance_state_t *state) {
     if (state->count == 1) {
-        if (!state->pressed)  //state->interrupted ||
-            return TD_SINGLE_TAP;
+        if (state->interrupted || !state->pressed) return TD_SINGLE_TAP;
         // Key has not been interrupted, but the key is still held. Means you want to send a 'HOLD'.
-        else
-            return TD_SINGLE_HOLD;
+        else return TD_SINGLE_HOLD;
     } else if (state->count == 2) {
         // TD_DOUBLE_SINGLE_TAP is to distinguish between typing "pepper", and actually wanting a double tap
         // action when hitting 'pp'. Suggested use case for this return value is when you want to send two
         // keystrokes of the key, and not the 'double tap' action/macro.
         // if (state->interrupted) return TD_DOUBLE_SINGLE_TAP;
-        // else if (state->pressed) return TD_DOUBLE_HOLD;
-        // else
-         return TD_DOUBLE_TAP;
+        if (state->pressed) return TD_DOUBLE_HOLD;
+        else return TD_DOUBLE_TAP;
     }
 
     // Assumes no one is trying to type the same letter three times (at least not quickly).
     // If your tap dance key is 'KC_W', and you want to type "www." quickly - then you will need to add
     // an exception here to return a 'TD_TRIPLE_SINGLE_TAP', and define that enum just like 'TD_DOUBLE_SINGLE_TAP'
-    // if (state->count == 3) {
-    //     if (state->interrupted || !state->pressed) return TD_TRIPLE_TAP;
-    //     else return TD_TRIPLE_HOLD;
-    // }
-    else if (state->count == 3) {
+    if (state->count == 3) {
         if (state->interrupted || !state->pressed) return TD_TRIPLE_TAP;
         else return TD_TRIPLE_HOLD;
-    }
-    else return TD_UNKNOWN;
+    } else return TD_UNKNOWN;
 }
 
-// Create an instance of 'td_tap_t' for the 'dance1' tap dance.
-static td_tap_t dance1_tap_state = {
-    .is_press_action = true,
-    .state = TD_NONE
-};
+// Create an instance of 'td_tap_t' for each tap dance
+static td_tap_t dance1_tap_state = { .is_press_action = true, .state = TD_NONE };
+static td_tap_t dance2_tap_state = { .is_press_action = true, .state = TD_NONE };
+static td_tap_t dance3_tap_state = { .is_press_action = true, .state = TD_NONE };
 
+// DANCE1 is for doubling up on a oneshot layer and toggling to other layers
 void dance1_finished(tap_dance_state_t *state, void *user_data) {
     dance1_tap_state.state = cur_dance(state);
     switch (dance1_tap_state.state) {
         case TD_SINGLE_TAP:
-            // one shot mod to symbol layer
+            // one shot mod to _SYMBOL layer
             set_oneshot_layer(_SYMBOL, ONESHOT_START);
             clear_oneshot_layer_state(ONESHOT_PRESSED);
             break;
@@ -267,7 +248,47 @@ void dance1_reset(tap_dance_state_t *state, void *user_data) {
     dance1_tap_state.state = TD_NONE;
 }
 
-// Tap Dance definitions, to access use the TD(index) macro in layouts
+// DANCE2 is for ensuring intentional keypresses of power/wake/sleep
+void dance2_finished(tap_dance_state_t *state, void *user_data) {
+    dance2_tap_state.state = cur_dance(state);
+    switch (dance2_tap_state.state) {
+        case TD_SINGLE_TAP:     register_code(KC_SYSTEM_WAKE);  break;  // wake
+        case TD_DOUBLE_TAP:     register_code(KC_SYSTEM_SLEEP); break;  // sleep
+        default: break;
+    }
+}
+
+void dance2_reset(tap_dance_state_t *state, void *user_data) {
+    switch (dance2_tap_state.state) {
+        case TD_SINGLE_TAP:     unregister_code(KC_SYSTEM_WAKE);  break;
+        case TD_DOUBLE_TAP:     unregister_code(KC_SYSTEM_SLEEP); break;
+        default: break;
+    }
+    dance2_tap_state.state = TD_NONE;
+}
+
+// DANCE3 is for ensuring intentional keypresses of keyboard reset/eeprom resert
+void dance3_finished(tap_dance_state_t *state, void *user_data) {
+    dance3_tap_state.state = cur_dance(state);
+    switch (dance3_tap_state.state) {
+        case TD_SINGLE_TAP: soft_reset_keyboard();  break;    // keyboard restart
+        case TD_DOUBLE_TAP: reset_keyboard();       break;    // keyboard reset
+        default: break;
+    }
+}
+
+void dance3_reset(tap_dance_state_t *state, void *user_data) {
+    switch (dance3_tap_state.state) {
+        case TD_SINGLE_TAP: break;  // do nothing
+        case TD_DOUBLE_TAP: break;  // do nothing
+        default: break;
+    }
+    dance3_tap_state.state = TD_NONE;
+}
+
+// Tap dance definitions, to access use the TD(index) macro in layouts
 tap_dance_action_t tap_dance_actions[] = {
-    [DANCE1] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, dance1_finished, dance1_reset)
+    [DANCE1] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, dance1_finished, dance1_reset),
+    [DANCE2] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, dance2_finished, dance2_reset),
+    [DANCE3] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, dance3_finished, dance3_reset)
 };
