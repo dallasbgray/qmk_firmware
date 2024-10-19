@@ -168,7 +168,9 @@
             "solid_multisplash": false,
             "starlight": false,
             "starlight_dual_hue": false,
-            "starlight_dual_sat": false
+            "starlight_dual_sat": false,
+            "riverflow": false,
+            "effect_max": false
         },
         "driver": "ws2812",
         "split_count": [34, 34],
