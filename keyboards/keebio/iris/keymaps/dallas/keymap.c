@@ -24,6 +24,10 @@ typedef struct {
     td_state_t state;
 } td_tap_t;
 
+typedef struct {
+    bool is_oneshot_activated;
+} td_user_t;
+
 enum tap_dance_keycodes {
     DANCE1,
     DANCE2,
@@ -67,24 +71,6 @@ struct led_lights {
     enum layer_names layer;
     enum key_group group;
     HSV hsv;
-};
-
-const uint8_t leds_numpad[] = {44, 45, 46, 51, 52, 53, 56, 57,59, 63};
-const uint8_t leds_function[] = {0, 2, 3, 5, 6, 8, 34, 36, 37, 39, 40, 42};
-const uint8_t leds_wasd[] = {12, 16, 17, 18};
-const uint8_t leds_backlight[] = {1, 4, 7, 24, 27, 31, 35, 38, 41, 58, 61, 65};
-const uint8_t leds_warning[] = {5, 6, 39, 40};
-const uint8_t leds_settings[] = {8, 16, 17, 18, 19, 20, 42, 50, 51, 52, 53, 54};
-const uint8_t led_caps = 28;
-
-// HSV note: All values (including hue) are scaled to 0-255
-const struct led_lights led_configs[] = {
-    { _SYMBOL,  _NUMPAD,    {0,   0, 255} },
-    { _SYMBOL,  _FUNCTION,  {0,   0, 255} },
-    { _SYMBOL,  _WASD,      {0,   0, 255} },
-    { _GAME,    _WASD,      {0,   0, 255} },
-    { _ADJUST,  _WARNING,   {0,   0, 255} },
-    { _ADJUST,  _SETTINGS,  {0,   0, 255} }
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -160,17 +146,38 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* RGB SECTION */
 
+const uint8_t leds_numpad[] = {44, 45, 46, 51, 52, 53, 56, 57,59, 63};
+const uint8_t leds_function[] = {0, 2, 3, 5, 6, 8, 34, 36, 37, 39, 40, 42};
+const uint8_t leds_wasd[] = {12, 16, 17, 18};
+const uint8_t leds_backlight[] = {1, 4, 7, 24, 27, 31, 35, 38, 41, 58, 61, 65};
+const uint8_t leds_warning[] = {5, 6, 39, 40};
+const uint8_t leds_settings[] = {8, 16, 17, 18, 19, 20, 42, 50, 51, 52, 53, 54};
+const uint8_t led_caps = 28;
+
+// HSV note: All values (including hue) are scaled to 0-255
+const struct led_lights led_configs[] = {
+    { _SYMBOL,  _NUMPAD,    {0,   0, 255}       },
+    { _SYMBOL,  _FUNCTION,  {0,   0, 255}       },
+    { _SYMBOL,  _WASD,      {0,   0, 255}       },
+    { _GAME,    _WASD,      {0,   0, 255}       },
+    { _ADJUST,  _WARNING,   {HSV_RED}           },
+    { _ADJUST,  _SETTINGS,  {HSV_CHARTREUSE}    }
+};
+
+/* MY FUNCTIONS */
+void set_rgb_defaults(void) {
+    (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_REACTIVE_SIMPLE);
+}
+
 // sets color for intersection of led group and current led batch from rgb_matrix_indicators
 void set_color_for_group(const uint8_t *leds, size_t leds_size, uint8_t led_min, uint8_t led_max, RGB *rgb) {
     for (uint8_t i = 0; i < leds_size; i++) {
-        if (leds[i] >= led_min && leds[i] < led_max) {
-            rgb_matrix_set_color(leds[i], rgb->r, rgb->g, rgb->b);
-        } else {
-            // do nothing, the leds are run in batches
-        }
+        // leds are updated in batches, need led_min and led_max in scope for this function
+        RGB_MATRIX_INDICATOR_SET_COLOR(leds[i], rgb->r, rgb->g, rgb->b);
     }
 }
 
+/* QMK SYSTEM FUNCTIONS */
 // override rgb effects for individual keys
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     // debugging print only when debug mode is enabled
@@ -242,23 +249,16 @@ void keyboard_post_init_user(void) {
 layer_state_t layer_state_set_user(layer_state_t state) {
     // layer indicator on all keys
     switch(get_highest_layer(state)) {
-        case _SYMBOL:
-            // highlight numpad, function row, and arrow keys
+        case _GAME:
             (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
             (void)rgb_matrix_sethsv_noeeprom(HSV_BLUE);
             break;
-        case _GAME:
-            // highlight wasd, and can use effect on any others
-            (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_NONE);
-            (void)rgb_matrix_sethsv_noeeprom(HSV_YELLOW);
-            break;
         case _ADJUST:
-            // no effect on main rgb, pulsing effect on backlight.
-            // highlight reset key, any other important keys
-            (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_NONE);
-            (void)rgb_matrix_sethsv_noeeprom(HSV_GREEN);
+            (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
+            (void)rgb_matrix_sethsv_noeeprom(HSV_OFF);
             break;
-        case _QWERTY: 
+        case _QWERTY:
+        case _SYMBOL:
         default:
             (void)set_rgb_defaults();
             break;
@@ -269,7 +269,6 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
 /* TAP DANCE SECTION */
 
-// look here for inspiration: https://github.com/walkerstop/qmk_firmware/blob/fanoe/keyboards/wheatfield/blocked65/keymaps/walker/keymap.c
 td_state_t cur_dance(tap_dance_state_t *state) {
     if (state->count == 1) {
         if (state->interrupted || !state->pressed) return TD_SINGLE_TAP;
@@ -298,25 +297,30 @@ static td_tap_t dance1_tap_state = { .is_press_action = true, .state = TD_NONE }
 static td_tap_t dance2_tap_state = { .is_press_action = true, .state = TD_NONE };
 static td_tap_t dance3_tap_state = { .is_press_action = true, .state = TD_NONE };
 
-// DANCE1 is for doubling up on a oneshot layer and toggling to other layers
+// not using *user_data since we want to pass info between separate tap dance instances
+static td_user_t dance1_user_data = { .is_oneshot_activated = false };
+
+// DANCE1 is for combining a oneshot layer key and toggling to other layers
 void dance1_finished(tap_dance_state_t *state, void *user_data) {
     dance1_tap_state.state = cur_dance(state);
     uint8_t layer = get_highest_layer(layer_state|default_layer_state);
 
     switch (dance1_tap_state.state) {
         case TD_SINGLE_TAP:
-            if (layer ==_QWERTY) {
-                // one shot layer to _SYMBOL layer
+            // one shot layer to _SYMBOL layer
+            if (!dance1_user_data.is_oneshot_activated && layer == _QWERTY) {
                 set_oneshot_layer(_SYMBOL, ONESHOT_START);
-                clear_oneshot_layer_state(ONESHOT_PRESSED);
+                dance1_user_data.is_oneshot_activated = true;
             } else {
-                // tap once to go back to querty from another layer or cancel one shot layer
+                // allows you to tap the one shot layer key again to turn it off
                 reset_oneshot_layer();
-                layer_move(_QWERTY); 
+                dance1_user_data.is_oneshot_activated = false;
             }
             break;
-        case TD_DOUBLE_TAP: layer_move(_GAME);      break;
-        case TD_TRIPLE_TAP: layer_move(_ADJUST);    break;
+        case TD_SINGLE_HOLD:    layer_move(_QWERTY);    break;
+        case TD_DOUBLE_HOLD:                            break; // do nothing
+        case TD_DOUBLE_TAP:     layer_move(_GAME);      break;
+        case TD_TRIPLE_TAP:     layer_move(_ADJUST);    break;
         // Last case is for fast typing. Assuming your key is `f`:
         // For example, when typing the word `buffer`, and you want to make sure that you send `ff` and not `Esc`.
         // In order to type `ff` when typing fast, the next character will have to be hit within the `TAPPING_TERM`, which by default is 200ms.
@@ -327,9 +331,14 @@ void dance1_finished(tap_dance_state_t *state, void *user_data) {
 
 void dance1_reset(tap_dance_state_t *state, void *user_data) {
     switch (dance1_tap_state.state) {
-        case TD_SINGLE_TAP: reset_oneshot_layer(); break; // do nothing
-        case TD_DOUBLE_TAP: break; // do nothing
-        case TD_TRIPLE_TAP: break; // do nothing
+        case TD_SINGLE_TAP: 
+            if (dance1_user_data.is_oneshot_activated)
+                clear_oneshot_layer_state(ONESHOT_PRESSED);
+            break;
+        case TD_SINGLE_HOLD:    break; // do nothing
+        case TD_DOUBLE_HOLD:    break; // do nothing
+        case TD_DOUBLE_TAP:     break; // do nothing
+        case TD_TRIPLE_TAP:     break; // do nothing
         default: break;
     }
     dance1_tap_state.state = TD_NONE;
