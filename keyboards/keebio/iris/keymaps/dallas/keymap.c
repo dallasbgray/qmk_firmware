@@ -154,6 +154,7 @@ const uint8_t leds_warning[] = {5, 6, 39, 40};
 const uint8_t leds_settings[] = {8, 16, 17, 18, 19, 20, 42, 50, 51, 52, 53, 54};
 const uint8_t led_caps = 28;
 
+// when using WS2812 driver, hsv is important because it allows the brightness to be limited
 // HSV note: All values (including hue) are scaled to 0-255
 const struct led_lights led_configs[] = {
     { _SYMBOL,  _NUMPAD,    {0,   0, 255}       },
@@ -165,14 +166,32 @@ const struct led_lights led_configs[] = {
 };
 
 /* MY FUNCTIONS */
+
+// limit hsv brightness based on current setting
+void hsv_set_brightness(HSV *hsv) {
+    if (hsv->v > rgb_matrix_get_val())
+        hsv->v = rgb_matrix_get_val();
+}
+
+// set hsv
+RGB hsv_to_rgb_custom(HSV hsv) {
+    hsv_set_brightness(&hsv);
+    return hsv_to_rgb((HSV){hsv.h, hsv.s, hsv.v});
+}
+
 void set_rgb_defaults(void) {
-    (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_REACTIVE_SIMPLE);
+    // rgb effects depend on a starting value to determine their color palette calculations
+    HSV a = {HSV_PURPLE};
+    hsv_set_brightness(&a);
+    (void)rgb_matrix_sethsv_noeeprom(a.h, a.s, a.v);
+
+    (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_CUSTOM_SOLID_REACTIVE_SIMPLE_RAINDROPS);
 }
 
 // sets color for intersection of led group and current led batch from rgb_matrix_indicators
+// leds are updated in batches, need led_min and led_max in scope for this function
 void set_color_for_group(const uint8_t *leds, size_t leds_size, uint8_t led_min, uint8_t led_max, RGB *rgb) {
     for (uint8_t i = 0; i < leds_size; i++) {
-        // leds are updated in batches, need led_min and led_max in scope for this function
         RGB_MATRIX_INDICATOR_SET_COLOR(leds[i], rgb->r, rgb->g, rgb->b);
     }
 }
@@ -180,15 +199,16 @@ void set_color_for_group(const uint8_t *leds, size_t leds_size, uint8_t led_min,
 /* QMK SYSTEM FUNCTIONS */
 // override rgb effects for individual keys
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-    // debugging print only when debug mode is enabled
-    // dprintf("led_min: %u, led_max: %u\n", led_min, led_max);
 
     uint8_t layer = get_highest_layer(layer_state);
-    size_t confArrSize = sizeof led_configs / sizeof led_configs[0];    
+    size_t confArrSize = sizeof led_configs / sizeof led_configs[0];
+    
+    // debugging
+    // dprintf("led_min: %u, led_max: %u\n", led_min, led_max);
 
     for (uint8_t i = 0; i < confArrSize; i++) {
         if (led_configs[i].layer == layer) {
-            RGB rgb = hsv_to_rgb(led_configs[i].hsv);
+            RGB rgb = hsv_to_rgb_custom(led_configs[i].hsv);
             size_t size;
 
             switch(led_configs[i].group) {
@@ -227,13 +247,11 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     return false;
 }
 
-void set_rgb_defaults(void) {
-    (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_RAINDROPS);
-}
-
 // set initial rgb here
 void keyboard_post_init_user(void) {
-    (void)rgb_matrix_enable_noeeprom();
+    if(!rgb_matrix_is_enabled()) {
+        (void)rgb_matrix_enable_noeeprom();
+    }
     (void)set_rgb_defaults();
 
     // debugging
@@ -245,17 +263,20 @@ void keyboard_post_init_user(void) {
     // debug_mouse=true;
 }
 
-// when using WS2812 hsv is important because it allows the brightness to be limited
 layer_state_t layer_state_set_user(layer_state_t state) {
     // layer indicator on all keys
     switch(get_highest_layer(state)) {
         case _GAME:
             (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
-            (void)rgb_matrix_sethsv_noeeprom(HSV_BLUE);
+            HSV p = {HSV_PURPLE};
+            hsv_set_brightness(&p);
+            (void)rgb_matrix_sethsv_noeeprom(p.h, p.s, p.v);
             break;
         case _ADJUST:
             (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
-            (void)rgb_matrix_sethsv_noeeprom(HSV_OFF);
+            HSV a = {HSV_AZURE};
+            hsv_set_brightness(&a);
+            (void)rgb_matrix_sethsv_noeeprom(a.h, a.s, a.v);
             break;
         case _QWERTY:
         case _SYMBOL:
@@ -308,7 +329,7 @@ void dance1_finished(tap_dance_state_t *state, void *user_data) {
     switch (dance1_tap_state.state) {
         case TD_SINGLE_TAP:
             // one shot layer to _SYMBOL layer
-            if (!dance1_user_data.is_oneshot_activated && layer == _QWERTY) {
+            if (!dance1_user_data.is_oneshot_activated && (layer == _QWERTY || layer == _GAME)) {
                 set_oneshot_layer(_SYMBOL, ONESHOT_START);
                 dance1_user_data.is_oneshot_activated = true;
             } else {
@@ -367,8 +388,9 @@ void dance2_reset(tap_dance_state_t *state, void *user_data) {
 void dance3_finished(tap_dance_state_t *state, void *user_data) {
     dance3_tap_state.state = cur_dance(state);
     switch (dance3_tap_state.state) {
-        case TD_SINGLE_TAP: soft_reset_keyboard();  break;    // keyboard restart
-        case TD_DOUBLE_TAP: reset_keyboard();       break;    // keyboard reset
+        case TD_SINGLE_TAP: soft_reset_keyboard();  break;  // keyboard restart
+        case TD_DOUBLE_TAP: reset_keyboard();       break;  // keyboard reset
+        case TD_TRIPLE_TAP: eeconfig_init();        break;  // eeprom clear
         default: break;
     }
 }
@@ -377,6 +399,7 @@ void dance3_reset(tap_dance_state_t *state, void *user_data) {
     switch (dance3_tap_state.state) {
         case TD_SINGLE_TAP: break;  // do nothing
         case TD_DOUBLE_TAP: break;  // do nothing
+        case TD_TRIPLE_TAP: break;  // do nothing
         default: break;
     }
     dance3_tap_state.state = TD_NONE;
