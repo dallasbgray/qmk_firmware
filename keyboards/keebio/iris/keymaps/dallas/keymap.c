@@ -155,6 +155,7 @@ const uint8_t leds_settings[] = {8, 16, 17, 18, 19, 20, 42, 50, 51, 52, 53, 54};
 const uint8_t led_caps = 28;
 
 // when using WS2812 driver, hsv is important because it allows the brightness to be limited
+// HSV note: All values (including hue) are scaled to 0-255
 const struct led_lights led_configs[] = {
     { _SYMBOL,  _NUMPAD,    {0,   0, 255}       },
     { _SYMBOL,  _FUNCTION,  {0,   0, 255}       },
