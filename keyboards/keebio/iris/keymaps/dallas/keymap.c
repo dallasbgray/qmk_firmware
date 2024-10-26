@@ -172,14 +172,19 @@ void hsv_set_brightness(HSV *hsv) {
         hsv->v = rgb_matrix_get_val();
 }
 
-// set jsv
+// set hsv
 RGB hsv_to_rgb_custom(HSV hsv) {
     hsv_set_brightness(&hsv);
     return hsv_to_rgb((HSV){hsv.h, hsv.s, hsv.v});
 }
 
 void set_rgb_defaults(void) {
-    (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_REACTIVE_SIMPLE);
+    // rgb effects depend on a starting value to determine their color palette calculations
+    HSV a = {HSV_PURPLE};
+    hsv_set_brightness(&a);
+    (void)rgb_matrix_sethsv_noeeprom(a.h, a.s, a.v);
+
+    (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_CUSTOM_SOLID_REACTIVE_SIMPLE_RAINDROPS);
 }
 
 // sets color for intersection of led group and current led batch from rgb_matrix_indicators

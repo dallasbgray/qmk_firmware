@@ -5,8 +5,8 @@
     "features": {
         "extrakey": true,
         "mousekey": true,
-        "rgb_matrix": true,
-        "nkro": true
+        "nkro": true,
+        "rgb_matrix": true
     },
     "encoder": {
         "enabled": true,
@@ -39,8 +39,8 @@
         },
         "transport": {
             "sync" :{
-                "matrix_state": true,
-                "layer_state": true
+                "layer_state": true,
+                "matrix_state": true
             }
         }
     },
@@ -145,7 +145,7 @@
             "rainbow_beacon": false,
             "rainbow_pinwheels": false,
             "raindrops": false,
-            "jellybean_raindrops": true,
+            "jellybean_raindrops": false,
             "hue_breathing": false,
             "hue_pendulum": false,
             "hue_wave": false,
