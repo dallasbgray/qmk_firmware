@@ -240,10 +240,8 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
     // caps lock indicator
     if (layer != _ADJUST && host_keyboard_led_state().caps_lock == true) {
-        if () {
-            RGB rgb = hsv_to_rgb_custom((HSV){HSV_GOLDENROD});
-            RGB_MATRIX_INDICATOR_SET_COLOR(led_caps, rgb.r, rgb.g, rgb.b);
-        }
+        RGB rgb = hsv_to_rgb_custom((HSV){HSV_GOLDENROD});
+        RGB_MATRIX_INDICATOR_SET_COLOR(led_caps, rgb.r, rgb.g, rgb.b);
     }
 
     return false;
