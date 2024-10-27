@@ -157,10 +157,10 @@ const uint8_t led_caps = 28;
 // when using WS2812 driver, hsv is important because it allows the brightness to be limited
 // HSV note: All values (including hue) are scaled to 0-255
 const struct led_lights led_configs[] = {
-    { _SYMBOL,  _NUMPAD,    {0,   0, 255}       },
-    { _SYMBOL,  _FUNCTION,  {0,   0, 255}       },
-    { _SYMBOL,  _WASD,      {0,   0, 255}       },
-    { _GAME,    _WASD,      {0,   0, 255}       },
+    { _SYMBOL,  _NUMPAD,    {HSV_PURPLE}        },
+    { _SYMBOL,  _FUNCTION,  {HSV_CYAN}          },
+    { _SYMBOL,  _WASD,      {HSV_GREEN}         },
+    { _GAME,    _WASD,      {HSV_GREEN}         },
     { _ADJUST,  _WARNING,   {HSV_RED}           },
     { _ADJUST,  _SETTINGS,  {HSV_CHARTREUSE}    }
 };
@@ -238,16 +238,16 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         }
     }
 
-    if (layer != _ADJUST) {
-        if (host_keyboard_led_state().caps_lock) {
-            rgb_matrix_set_color(led_caps, RGB_RED); // caps lock LED, on for all regular layers
-        }
+    // caps lock indicator
+    if (layer != _ADJUST && host_keyboard_led_state().caps_lock == true) {
+        RGB rgb = hsv_to_rgb_custom((HSV){HSV_GOLDENROD});
+        RGB_MATRIX_INDICATOR_SET_COLOR(led_caps, rgb.r, rgb.g, rgb.b);
     }
 
     return false;
 }
 
-// set initial rgb here
+// init rgb here
 void keyboard_post_init_user(void) {
     if(!rgb_matrix_is_enabled()) {
         (void)rgb_matrix_enable_noeeprom();
@@ -266,20 +266,15 @@ void keyboard_post_init_user(void) {
 layer_state_t layer_state_set_user(layer_state_t state) {
     // layer indicator on all keys
     switch(get_highest_layer(state)) {
-        case _GAME:
+        case _ADJUST:
             (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
             HSV p = {HSV_PURPLE};
             hsv_set_brightness(&p);
             (void)rgb_matrix_sethsv_noeeprom(p.h, p.s, p.v);
             break;
-        case _ADJUST:
-            (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
-            HSV a = {HSV_AZURE};
-            hsv_set_brightness(&a);
-            (void)rgb_matrix_sethsv_noeeprom(a.h, a.s, a.v);
-            break;
         case _QWERTY:
         case _SYMBOL:
+        case _GAME:
         default:
             (void)set_rgb_defaults();
             break;
