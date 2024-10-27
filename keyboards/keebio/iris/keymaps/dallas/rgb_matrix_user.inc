@@ -109,6 +109,4 @@ static bool SOLID_REACTIVE_SIMPLE_RAINDROPS(effect_params_t* params) {
     return effect_runner_reactive_mine(params, &SOLID_REACTIVE_SIMPLE_math);
 }
 
-
-
 #endif // RGB_MATRIX_CUSTOM_EFFECT_IMPLS

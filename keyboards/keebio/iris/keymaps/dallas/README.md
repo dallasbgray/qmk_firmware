@@ -13,16 +13,11 @@ keebio iris rev8 rgb led index locations (based on keebio/rev8/keyboard.json)
              27 (BL)          24 (BL)   33   ,   32 ,     30   ,                  66   ,   64   ,   63       58 (BL)           61 (BL)
                                     └────────┴────────┴────────┘              └────────┴────────┴────────┘
                                                      31 (BL)                          65 (BL) 
-look into "super alt tab" https://docs.qmk.fm/feature_macros#tap-code-kc
+
 
 debug with the `qmk console` command
 `qmk doctor` can help environment issues
 `qmk migrate` searches for legacy code that can be converted to the `info.json` format
-
-matrix scan frequency with all rgb code off is ~1430, 
-1rgb effect is 1410, 
-1320 1 rgb effect & layer checks & rgb overrides
-1500 after fixing bug in the rgb overrides. Drops to 1480 with the rgb overrides
 
 Compiling
 `qmk compile -kb <my_keyboard> -km <my_keymap>`, although `qmk flash` also compiles the code
@@ -39,9 +34,9 @@ Compiling
   - Run `qmk flash -kb <my_keyboard> -km <my_keymap>`
  - make sure to flash each half if a split keyboard
 
+matrix scan frequency with a couple layers and no rgb is ~1400-1500 with the rp2040 chip
 
 Personal changelog for `keyboard.json` under the rev8 folder
 - set all rgb effects to `false`
 - `nkro` and `force_nkro` set to `true`
-- enabled a couple rgb effects
 - added `"layer_state": true`
