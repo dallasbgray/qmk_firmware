@@ -155,11 +155,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* RGB SECTION */
 
 const uint8_t leds_numpad[] = {44, 45, 46, 51, 52, 53, 56, 57,59, 63};
-const uint8_t leds_function[] = {0, 2, 3, 6, 21, 34, 36, 37, 40, 55};
+const uint8_t leds_function[] = {0, 2, 3, 5, 6, 8, 34, 36, 37, 39, 40, 42};
 const uint8_t leds_wasd[] = {12, 16, 17, 18};
 const uint8_t leds_backlight[] = {1, 4, 7, 24, 27, 31, 35, 38, 41, 58, 61, 65};
 const uint8_t leds_warning[] = {5, 39};
-const uint8_t leds_settings[] = { 16, 17, 18, 19, 20, 50, 51, 52, 53, 54, 57, 59};
+const uint8_t leds_settings[] = {15, 16, 17, 18, 19, 20, 21,23, 25, 49, 50, 51, 52, 53, 54, 55, 57, 59};
 const uint8_t leds_power[] = {8, 42};
 const uint8_t led_caps = 28;
 
