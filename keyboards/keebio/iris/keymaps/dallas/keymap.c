@@ -237,6 +237,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
                 case _SETTINGS:
                     size = sizeof leds_settings / sizeof leds_settings[0];
                     (void)set_color_for_group(leds_settings, size, led_min, led_max, &rgb);
+                    break;
                 case _POWER:
                     size = sizeof leds_power / sizeof leds_power[0];
                     (void)set_color_for_group(leds_power, size, led_min, led_max, &rgb);
