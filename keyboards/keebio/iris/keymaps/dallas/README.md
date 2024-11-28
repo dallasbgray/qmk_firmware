@@ -20,7 +20,7 @@ debug with the `qmk console` command
 `qmk migrate` searches for legacy code that can be converted to the `info.json` format
 
 Compiling
-`qmk compile -kb <my_keyboard> -km <my_keymap>`, although `qmk flash` also compiles the code
+`qmk compile -kb keebio/iris/rev8 -km dallas`, although `qmk flash` also compiles the code
 `qmk clean` to clean build folders
 
 (flashing the bootloader)[https://docs.keeb.io/flashing-firmware#rp2040-board-uf2-bootloader]

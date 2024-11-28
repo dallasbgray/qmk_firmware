@@ -73,6 +73,13 @@ struct led_lights {
     HSV hsv;
 };
 
+// more HSV colors
+#define CHRISTMASTREE   21, 235, 255    // matches my Christmas tree led light color
+#define CANDLE          21, 212, 255    // 1900 Kelvin
+#define TUNGSTEN40W     20, 110, 255    // 2600 Kelvin
+#define TUNGSTEN100W    22, 84, 255     // 2850 Kelvin
+#define CARBONARC       23, 10, 255     // 5200 Kelvin
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
     // ┌────────┬────────┬────────┬────────┬────────┬────────┐                       ┌────────┬────────┬────────┬────────┬────────┬────────┐
@@ -176,16 +183,16 @@ void hsv_set_brightness(HSV *hsv) {
 // set hsv
 RGB hsv_to_rgb_custom(HSV hsv) {
     hsv_set_brightness(&hsv);
-    return hsv_to_rgb((HSV){hsv.h, hsv.s, hsv.v});
+    return hsv_to_rgb(hsv);
 }
 
 void set_rgb_defaults(void) {
-    // rgb effects depend on a starting value to determine their color palette calculations
-    HSV a = {HSV_PURPLE};
+    HSV a = {CHRISTMASTREE};
     hsv_set_brightness(&a);
     (void)rgb_matrix_sethsv_noeeprom(a.h, a.s, a.v);
 
-    (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_CUSTOM_SOLID_REACTIVE_SIMPLE_RAINDROPS);
+    // (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_CUSTOM_SOLID_REACTIVE_SIMPLE_RAINDROPS);
+    (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_CUSTOM_SOLID_TWINKLE);
 }
 
 // sets color for intersection of led group and current led batch from rgb_matrix_indicators
