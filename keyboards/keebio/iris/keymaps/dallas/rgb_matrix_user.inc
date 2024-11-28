@@ -37,7 +37,7 @@ typedef enum {
 
 static const uint8_t leds_backlight[] = {1, 4, 7, 24, 27, 31, 35, 38, 41, 58, 61, 65};
 static led_state_t led_state[MAX_LED_INDEX];
-color_palette_t current_palette = DEFAULTCOLOR;
+static color_palette_t current_palette = DEFAULTCOLOR;
 
 static void set_hsv_custom(uint8_t i, HSV hsv) {
     RGB rgb = rgb_matrix_hsv_to_rgb(hsv);

@@ -65,6 +65,7 @@ enum key_group {
     _BACKLIGHT,
     _WARNING,
     _SETTINGS,
+    _POWER
 };
 
 struct led_lights {
@@ -122,13 +123,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [_ADJUST] = LAYOUT(
     // ┌────────┬────────┬────────┬────────┬────────┬────────┐                       ┌────────┬────────┬────────┬────────┬────────┬────────┐
-         KC_NO  , KC_NO  , KC_NO  , TD_2   , TD_3   , NK_TOGG,                         NK_TOGG, TD_3  ,  TD_2   , KC_NO  , KC_NO  , KC_NO  ,
+         KC_NO  , KC_NO  , KC_NO  , TD_3   , KC_NO  , TD_2   ,                         TD_2   , KC_NO  , TD_3   , KC_NO  , KC_NO  , KC_NO  ,
     // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
          KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,                         KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,
     // ├────────┼────────┼────────┼────────┼────────┼────────┤                       ├────────┼────────┼────────┼────────┼────────┼────────┤
-         KC_NO  , RGB_SPD, RGB_SPI, RGB_VAD, RGB_VAI, RGB_TOG,                         RGB_TOG, RGB_VAI, RGB_VAD, RGB_SPI, RGB_SPD, KC_NO  ,
+         RM_SPDD, RM_SPDU, RM_VALD, RM_VALU, RM_NEXT, RM_TOGG,                         RM_TOGG, RM_NEXT, RM_VALU, RM_VALD, RM_SPDU, RM_SPDD,
     // ├────────┼────────┼────────┼────────┼────────┼────────┼────────┐     ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-         KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,       KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  , KC_NO  ,
+         KC_NO  , KC_NO  , RM_HUED, RM_HUEU, KC_NO  , NK_TOGG, KC_NO  ,       KC_NO  , NK_TOGG, KC_NO  , RM_HUEU, RM_HUED, KC_NO  , KC_NO  ,
     // └────────┴────────┴────────┴────┬───┴────┬───┴────┬───┴────┬───┘     └────┬───┴────┬───┴────┬───┴────┬───┴────────┴────────┴────────┘
                                          KC_NO  , TD_1   , KC_NO  ,                KC_NO  ,  TD_1  , KC_NO
                                     // └────────┴────────┴────────┘              └────────┴────────┴────────┘
@@ -154,11 +155,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* RGB SECTION */
 
 const uint8_t leds_numpad[] = {44, 45, 46, 51, 52, 53, 56, 57,59, 63};
-const uint8_t leds_function[] = {0, 2, 3, 5, 6, 8, 34, 36, 37, 39, 40, 42};
+const uint8_t leds_function[] = {0, 2, 3, 6, 21, 34, 36, 37, 40, 55};
 const uint8_t leds_wasd[] = {12, 16, 17, 18};
 const uint8_t leds_backlight[] = {1, 4, 7, 24, 27, 31, 35, 38, 41, 58, 61, 65};
-const uint8_t leds_warning[] = {5, 6, 39, 40};
-const uint8_t leds_settings[] = {8, 16, 17, 18, 19, 20, 42, 50, 51, 52, 53, 54};
+const uint8_t leds_warning[] = {5, 39};
+const uint8_t leds_settings[] = { 16, 17, 18, 19, 20, 50, 51, 52, 53, 54, 57, 59};
+const uint8_t leds_power[] = {8, 42};
 const uint8_t led_caps = 28;
 
 // when using WS2812 driver, hsv is important because it allows the brightness to be limited
@@ -169,7 +171,8 @@ const struct led_lights led_configs[] = {
     { _SYMBOL,  _WASD,      {HSV_GREEN}         },
     { _GAME,    _WASD,      {HSV_GREEN}         },
     { _ADJUST,  _WARNING,   {HSV_RED}           },
-    { _ADJUST,  _SETTINGS,  {HSV_CHARTREUSE}    }
+    { _ADJUST,  _SETTINGS,  {HSV_CHARTREUSE}    },
+    { _ADJUST,  _POWER,     {HSV_BLUE}          }
 };
 
 /* MY FUNCTIONS */
@@ -180,19 +183,15 @@ void hsv_set_brightness(HSV *hsv) {
         hsv->v = rgb_matrix_get_val();
 }
 
+void set_hsv_custom(HSV hsv) {
+    hsv_set_brightness(&hsv);
+    (void)rgb_matrix_sethsv_noeeprom(hsv.h, hsv.s, hsv.v);
+}
+
 // set hsv
 RGB hsv_to_rgb_custom(HSV hsv) {
     hsv_set_brightness(&hsv);
     return hsv_to_rgb(hsv);
-}
-
-void set_rgb_defaults(void) {
-    HSV a = {CHRISTMASTREE};
-    hsv_set_brightness(&a);
-    (void)rgb_matrix_sethsv_noeeprom(a.h, a.s, a.v);
-
-    // (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_CUSTOM_SOLID_REACTIVE_SIMPLE_RAINDROPS);
-    (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_CUSTOM_SOLID_TWINKLE);
 }
 
 // sets color for intersection of led group and current led batch from rgb_matrix_indicators
@@ -238,6 +237,9 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
                 case _SETTINGS:
                     size = sizeof leds_settings / sizeof leds_settings[0];
                     (void)set_color_for_group(leds_settings, size, led_min, led_max, &rgb);
+                case _POWER:
+                    size = sizeof leds_power / sizeof leds_power[0];
+                    (void)set_color_for_group(leds_power, size, led_min, led_max, &rgb);
                     break;
                 default:
                     break;
@@ -256,10 +258,10 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
 // init rgb here
 void keyboard_post_init_user(void) {
-    if(!rgb_matrix_is_enabled()) {
-        (void)rgb_matrix_enable_noeeprom();
-    }
-    (void)set_rgb_defaults();
+    // unnecessary after _ADJUST keycode updates
+    // if(!rgb_matrix_is_enabled()) {
+    //     (void)rgb_matrix_enable();
+    // }
 
     // debugging
     // debug_enable = true;
@@ -270,23 +272,48 @@ void keyboard_post_init_user(void) {
     // debug_mouse=true;
 }
 
-layer_state_t layer_state_set_user(layer_state_t state) {
-    // layer indicator on all keys
-    switch(get_highest_layer(state)) {
-        case _ADJUST:
-            (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
-            HSV p = {HSV_PURPLE};
-            hsv_set_brightness(&p);
-            (void)rgb_matrix_sethsv_noeeprom(p.h, p.s, p.v);
+// can use to change keyboard modes based on the layer state
+// layer_state_t layer_state_set_user(layer_state_t state) {
+//     // layer indicator on all keys
+//     switch(get_highest_layer(state)) {
+//         case _ADJUST:
+//             (void)rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
+//             HSV p = {HSV_PURPLE};
+//             hsv_set_brightness(&p);
+//             (void)rgb_matrix_sethsv_noeeprom(p.h, p.s, p.v);
+//             break;
+//         case _QWERTY:
+//         case _SYMBOL:
+//         case _GAME:
+//         default:
+//             (void)set_rgb_defaults();
+//             break;
+//     }
+//     return state;
+// }
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    bool r = true; // true = continue processing this keycode
+    switch (keycode) {
+        case RM_NEXT:
+            uint8_t next_mode = rgb_matrix_get_mode() + 1;
+            next_mode = (next_mode < RGB_MATRIX_EFFECT_MAX) ? next_mode : 1;
+            
+            // set the global effect settings
+            switch (next_mode) {
+                case RGB_MATRIX_CUSTOM_SOLID_TWINKLE:
+                    (void)set_hsv_custom((HSV){CHRISTMASTREE});
+                    break;
+                case RGB_MATRIX_CUSTOM_SOLID_REACTIVE_SIMPLE_RAINDROPS:
+                    (void)set_hsv_custom((HSV){HSV_PURPLE});
+                    break;
+                default:
+                    break;
+            }
             break;
-        case _QWERTY:
-        case _SYMBOL:
-        case _GAME:
         default:
-            (void)set_rgb_defaults();
             break;
     }
-    return state;
+    return r;
 }
 
 
